@@ -13,11 +13,11 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["-i", "GOPR2951.MP4", "-o", "t_out.mp4", "-ef", "702", 
+            "args": ["-i", "GOPR2951.MP4", "-o", "test_out.mp4", "-ef", "702", 
                      "-sf", "284", "-st", "3", 
                     "-ft", "3", "-lt", "4", 
-                    "-wt", "35", "-jt", "55", "-an", "d01_j03: B-C-E-L-P",
-                    // "-enc", "x265_high", 
+                    "-wt", "10", "-jt", "15", "-an", "d01_j03:B-C-E-L-P",
+                    "-enc", "quick", 
                 ],
             "cwd": "/fastest/ljw/Aviatrixx"
         }  

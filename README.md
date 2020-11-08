@@ -20,7 +20,7 @@ the script tries to at least *loosely* follow the ffmpeg config model, where you
 
 ### OPTIONS ###
 
-There are quite a few, but the idea is we wanted to be able to put all the possibilities into a single set of options.  
+There are quite a few, but the idea is we wanted to be able to put all the possibilities into a single command.  
 
 `-i, --input_file` : the input file.
 
@@ -36,9 +36,9 @@ There are quite a few, but the idea is we wanted to be able to put all the possi
 
 `-ft, --freeze_time` : (*optional*, default=0) duration of the freeze frame.  At the end of working time, the script will "freeze-frame" the video.  Generally used to determine if the formation at the end of working time is complete or not.  
 
-`-lt, --leadin_time` : (*optional*, default=3) duration of the lead-in to the exit.   
+`-lt, --leadin_time` : (*optional*, default=0) duration of the lead-in to the exit.   
 
-`-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.)
+`-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.).  If `working_time` is set to zero, no timer is displayed for that jump.  This can be useful if you just want to trim down a video without caring exactly when the exit is.
 
 `-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.
 
@@ -95,6 +95,14 @@ If you want to process a bunch of files at once, you can build an excel file wit
 ```
 ./jumpstamper.py -xls encode.xlsx
 ```
+
+---
+
+If you aren't interested in the exact exit time, but maybe want to just trim your jumps some and re-encode them, set `working_time` to zero with `-wt 0` to suppress the timer overlay.  For example, if you wanted to remove the first 15 seconds of the video for a jump encoded at 48 fps and keep the 60 seconds following that point, you could do the following.  (Note: because the exit_frame is in frames, you have to do the math yourself to convert seconds to frames, which means you also have to know the frame rate of your video...)
+```
+./jumpstamper.py -i input.mp4 -o output.mp4 -wt 0 -ef 720 -jt 60
+```
+
 
 
 

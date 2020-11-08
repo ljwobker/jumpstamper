@@ -108,7 +108,7 @@ def overlayProf(profile_id, vid_metadata):
         'start_number' : 0,
         }
 
-    # adjust location of the timestamp
+    # set the location of the timestamp
     profile['timestamp'] = {
         **profile['common'],
         'y' : 0,
@@ -323,13 +323,20 @@ def makeJump(args):
         'duration' : fade_duration,
     }
 
-    base_EIF_calc = '%{eif:(trunc(t-LEADIN)):d:2}.%{eif:abs((1M*(t-LEADIN)-1M*trunc(t-LEADIN))/10000):d:2}'
-    timestamp_args['text'] = base_EIF_calc.replace('LEADIN', str(args.leadin_time))
+
+    if (args.working_time == 0):          # set text to empty string, which causes drawtext to do nothing
+        timestamp_args['text'] = ''         
+    else:
+        # this is an expression that drawtext can evaluate to get the timestamp in the format 
+        # that we want.  See 'eif' 'trunc' 'abs' functions and 't' variable in docs.
+        base_EIF_calc = '%{eif:(trunc(t-LEADIN)):d:2}.%{eif:abs((1M*(t-LEADIN)-1M*trunc(t-LEADIN))/10000):d:2}'
+        timestamp_args['text'] = base_EIF_calc.replace('LEADIN', str(args.leadin_time))
+
     jump = (
         ffmpeg
         .input(args.input_file)
         .trim(**trim_args)
-        .setpts('N/FRAME_RATE/TB')      # fixup PTS for the looped frames
+        .setpts('N/FRAME_RATE/TB')      # fixup PTS for the trimmed stream
         .filter('drawtext', **timestamp_args)
         .filter('drawtext', **annot_args)
         .filter('loop', **freeze_loop_args)  
@@ -355,7 +362,7 @@ def joinAndPostFilters(args, to_concat):
 
 
 
-def processJump(list_of_args):
+def processJumps(list_of_args):
 
     for args in list_of_args:
         enc_opts = encoderProf(args.encoder_prof, args.vid_metadata)
@@ -387,8 +394,8 @@ def jumpsFromXlsx(xls_file):
     except:
         print(f"failed to open file {xls_file}")
     ws = wb.active
-    # assert that worksheet has at least two rows
-    # assert that input_file and output_file are both in row 1
+    # TODO: assert that worksheet has at least two rows
+    # TODO:assert that input_file and output_file are both in row 1
 
 
     listOfJumpArgs = []
@@ -411,32 +418,28 @@ def getCmdLineList(parser):
     if it's a single jump, return a list with one element containing the passed args
     '''
     cleaned_jumps = []
-    inputArgDict = vars(parser.parse_args())  
-    if inputArgDict['excel_sheet'] is not None:
-        jumpsToProcess = jumpsFromXlsx(inputArgDict['excel_sheet'])
+    cli_args = vars(parser.parse_args())  
+    if cli_args['excel_sheet'] is not None:
+        jumpsToProcess = jumpsFromXlsx(cli_args['excel_sheet'])
     else:
-        jumpsToProcess = [inputArgDict]         # make the jump into a single item list
+        jumpsToProcess = [cli_args]         # make the jump into a single item list
     
 
     for rawjump in jumpsToProcess:
-        # jump = StamperArgs(**rawjump)
         cleanedArgs = { k:v for (k,v) in rawjump.items() if v is not None }
         jump = StamperArgs(**cleanedArgs)
         cleaned_jumps.append(jump)
-    # pprint.pprint(cleanedArgs)
     return cleaned_jumps
 
 
 def __main__():
 
     parser = jumpParser()
-    # cli_args = StamperArgs(**getCmdLineArgs(parser))
     cli_arg_list = getCmdLineList(parser)
-    processJump(cli_arg_list)  
+    processJumps(cli_arg_list)  
 
     return 0
 
 
 __main__()
-exit(0)
 
