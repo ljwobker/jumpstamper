@@ -18,41 +18,6 @@ Jumpstamper relies heavily on [ffmpeg](https://github.com/kkroening/ffmpeg-pytho
 the script tries to at least *loosely* follow the ffmpeg config model, where you have an input file, a set of operations/transformations on that file, and an output file.  A set of command line options and/or profiles are used to control the behavior.  
 
 
-### OPTIONS ###
-
-There are quite a few, but the idea is we wanted to be able to put all the possibilities into a single command.  
-
-`-i, --input_file` : the input file.
-
-`-o, --output_file` : the output file.  Note that unlike ffmpeg, jumpstamper has an explicit option to define the output file.  
-
-`-s, --stamp` : (*optional*) take the input file and "stamp" it with frame numbers.  These can then be used to determine the frame numbers for parameters such as the exit frame or slate frame.
-
-`-ef, --exit_frame` : (*optional*) the frame number of the exit from the original input video, (i.e. when the timer for a scoring jump begins)
-
-`-sf, --slate_frame` : (*optional*, default=0) the frame number (from the original input video) of a readable slate for competition/scoring jumps -- or just a fun camera geek or still if you're into that sort of thing...
-
-`-st, --slate_time` : (*optional*, default=3 if slate_frame is used, 0 otherwise) duration of the slate frame.
-
-`-ft, --freeze_time` : (*optional*, default=0) duration of the freeze frame.  At the end of working time, the script will "freeze-frame" the video.  Generally used to determine if the formation at the end of working time is complete or not.  
-
-`-lt, --leadin_time` : (*optional*, default=0) duration of the lead-in to the exit.   
-
-`-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.).  If `working_time` is set to zero, no timer is displayed for that jump.  This can be useful if you just want to trim down a video without caring exactly when the exit is.
-
-`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.
-
-`-ovr, --overlay_prof` : (*optional*) a profile that describes what various overlay elements (such as the counter/clock, the jump name, the team name, etc.) are present, their parameters (color, size, etc.) and where they are overlaid on the video.  These are a combination of script parameters as well as options that are fed to the various ffmpeg filters.
-
-`-enc, --encoder_prof` : (*optional*)  (*advanced users*) an encoder profile is a set of options used to encode/transcode the video file.  This includes things like the output resolution, the output quality, and the output codec.  
-
-`-an, --annotation` : (*optional*, default=None) the string to use for the annotation block of the overlay.  This could be something like the jump sequence, the team name, the videographer credits, etc.
-
-`-xls, --excel_sheet` : If present, parse the given file (must be in .xlsx format).  The first row MUST be a valid set of parameters such as "--exit_frame" and "--working_time".  Each subsequent row is processed as a single jump with the corresponding parameters passed directly to the script.  
-
-
-If you wish to modify a profile or layout, I strongly suggest making a copy of an existing one and working from that!
-
 ### EXAMPLES ###
 
 ---
@@ -104,7 +69,40 @@ If you aren't interested in the exact exit time, but maybe want to just trim you
 ```
 
 
+### OPTIONS ###
 
+There are quite a few, but the idea is we wanted to be able to put all the possibilities into a single command.  
+
+`-i, --input_file` : the input file.
+
+`-o, --output_file` : the output file.  Note that unlike ffmpeg, jumpstamper has an explicit option to define the output file.  
+
+`-s, --stamp` : (*optional*) take the input file and "stamp" it with frame numbers.  These can then be used to determine the frame numbers for parameters such as the exit frame or slate frame.
+
+`-ef, --exit_frame` : (*optional*) the frame number of the exit from the original input video, (i.e. when the timer for a scoring jump begins)
+
+`-sf, --slate_frame` : (*optional*, default=0) the frame number (from the original input video) of a readable slate for competition/scoring jumps -- or just a fun camera geek or still if you're into that sort of thing...
+
+`-st, --slate_time` : (*optional*, default=3 if slate_frame is used, 0 otherwise) duration of the slate frame.
+
+`-ft, --freeze_time` : (*optional*, default=0) duration of the freeze frame.  At the end of working time, the script will "freeze-frame" the video.  Generally used to determine if the formation at the end of working time is complete or not.  
+
+`-lt, --leadin_time` : (*optional*, default=0) duration of the lead-in to the exit.   
+
+`-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.).  If `working_time` is set to zero, no timer is displayed for that jump.  This can be useful if you just want to trim down a video without caring exactly when the exit is.
+
+`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.
+
+`-ovr, --overlay_prof` : (*optional*) a profile that describes what various overlay elements (such as the counter/clock, the jump name, the team name, etc.) are present, their parameters (color, size, etc.) and where they are overlaid on the video.  These are a combination of script parameters as well as options that are fed to the various ffmpeg filters.
+
+`-enc, --encoder_prof` : (*optional*)  (*advanced users*) an encoder profile is a set of options used to encode/transcode the video file.  This includes things like the output resolution, the output quality, and the output codec.  
+
+`-an, --annotation` : (*optional*, default=None) the string to use for the annotation block of the overlay.  This could be something like the jump sequence, the team name, the videographer credits, etc.
+
+`-xls, --excel_sheet` : If present, parse the given file (must be in .xlsx format).  The first row MUST be a valid set of parameters such as "--exit_frame" and "--working_time".  Each subsequent row is processed as a single jump with the corresponding parameters passed directly to the script.  Be aware that the input/output file columns need to be in TEXT format within excel, and they are relative to wherever you called the script from.  So if your input_file is `./foozle/jump1.mp4` and you call it from `/home/judge1` then your input file must be `/home/judge1/foozle/jump1.mp4`
+
+
+If you wish to modify a profile or layout, I strongly suggest making a copy of an existing one and working from that!
 
 
  ### General Notes.... ###
