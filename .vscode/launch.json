@@ -1,0 +1,57 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+
+
+
+        {
+            "name": "Aviatrixx",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["-i", "GOPR2951.MP4", "-o", "t_out.mp4", "-ef", "702", 
+                     "-sf", "284", "-st", "3", 
+                    "-ft", "3", "-lt", "4", 
+                    "-wt", "35", "-jt", "55", "-an", "d01_j03: B-C-E-L-P",
+                    // "-enc", "x265_high", 
+                ],
+            "cwd": "/fastest/ljw/Aviatrixx"
+        }  
+
+        {
+            "name": "xls_test",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["-xls", "encode.xlsx"],
+            "cwd": "/fastest/ljw/Aviatrixx"
+        }  
+
+        
+        {
+            "name": "stamper",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["AVCHD_short.MTS"],
+            "cwd": "${workspaceFolder}/stamper"
+        }  
+
+
+
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+        }
+    ]
+}
+

@@ -117,7 +117,7 @@ def overlayProf(profile_id, vid_metadata):
 
     profile['annot'] = copy.deepcopy(profile['common'])
     profile['annot']['fontsize'] = roundToMultOf(vid_h/16 , 8)
-    annot_y = vid_h - profile['annot']['fontsize'] - (profile['annot']['boxborderw'] * 2)
+    annot_y = vid_h - profile['annot']['fontsize'] 
     profile['annot']['y'] = annot_y
     profile['annot']['x'] = 0
 
@@ -142,7 +142,7 @@ def encoderProf(profile_id, vid_metadata):
     profile['output'] = {
         'c:v': 'libx264',
         # 'pix_fmt' : 'yuvj420p',
-        'crf': 25,
+        'crf': 27,
         'preset': 'slow',
         'an': None,
         'y': None,
@@ -165,6 +165,13 @@ def encoderProf(profile_id, vid_metadata):
         # profile['fps'] = {'fps': 25}
         profile['output']['crf']  = 32
         profile['output']['preset']  = 'veryfast'
+
+    if (profile_id == 'x265_high'):
+        profile['output']['c:v'] = 'libx265'
+        profile['output']['preset'] = 'medium'
+        profile['output']['crf'] = '28'
+
+
 
     return profile
 

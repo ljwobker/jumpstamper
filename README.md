@@ -20,6 +20,8 @@ the script tries to at least *loosely* follow the ffmpeg config model, where you
 
 ### OPTIONS ###
 
+There are quite a few, but the idea is we wanted to be able to put all the possibilities into a single set of options.  
+
 `-i, --input_file` : the input file.
 
 `-o, --output_file` : the output file.  Note that unlike ffmpeg, jumpstamper has an explicit option to define the output file.  
@@ -52,25 +54,53 @@ the script tries to at least *loosely* follow the ffmpeg config model, where you
 If you wish to modify a profile or layout, I strongly suggest making a copy of an existing one and working from that!
 
 ### EXAMPLES ###
-Take `input.mp4`, stamp it with the frame number (so you can find things like the exit and slate frames), and output to `input_stamped.mp4`
+
+---
+
+
+Take `input.mp4`, stamp it with the frame number (so you can find things like the exit and slate frames), and output to `stamped_input.mp4`:
 ```
 jumpstamper.py  -i input.mp4  -s  -o stamped_input.mp4 
 ```
 
-After looking at the stamped file, you've decided that the slate frame is number `255` and the exit is at frame number `890`.  You want to have a final stream that goes like this:
+---
+
+
+After looking at the stamped file, you've decided that the slate frame is number `255` and the exit is at frame number `890`.  You want to have a final result that goes like this:
  - show the slate frame for 3 seconds
  - begin the jump with 5 seconds of lead-in prior to the exit frame
  - show the jump for 35 seconds of working time
  - at the 35 second point, freeze the current frame for 5 seconds
  - continue playing the rest of the jump up until 60 seconds, then end the file.
- - additionally, you want to display "Day 2, Jump 4, A-B-C-D-E" over the video.
+ - additionally, you want to display "Day 2, Jump 4, A-B-C-D-E" over the video.  (If you're going to put spaces or commas or anything that might confuse the shell, you MUST wrap them in quotes...)
 
 The corresponding command line to execute is:
  ```
  ./jumpstamper.py -i input.mp4 -o d02j04_A-B-C-D-E.mp4 -sf 255 -st 3 -lt 5 -ef 890 -wt 35 -jt 60 -an "Day 2, Jump 4, A-B-C-D-E"
 ```
 
-a
+---
+
+Now say you have a bunch of files from a hard day of jumping and you want to do the frame overlay on all of them at once.  We'll just use a [tiny bit of BASH](https://tldp.org/LDP/abs/html/abs-guide.html#EX22) here and do them all in one shot:
+```
+for file in GOPR*.MP4
+do 
+    ./jumpstamper.py -i $file -s -o stamped-$file
+done
+```
+
+---
+
+If you want to process a bunch of files at once, you can build an excel file with all the different times and frame numbers, and have the script parse each row and stamp each jump accordingly.  Here our excel file is named `encode.xlsx`:
+```
+./jumpstamper.py -xls encode.xlsx
+```
 
 
- 
+
+
+ ### General Notes.... ###
+ - ffmpeg is multithreaded by default, there is very little advantage to explictly launching multiple parallel instances.  
+ - encoding time/speed is HUGELY variable, based on what encoder options you use,  what kind of machine you're running, the resolution, frame rate, and length of your source video.  The rabbit hole of optimizations here is deep and I hope to get to it one day...
+ - You can use Ctrl-C to stop a running encode.
+
