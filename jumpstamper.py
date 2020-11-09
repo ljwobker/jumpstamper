@@ -92,7 +92,7 @@ def overlayProf(profile_id, vid_metadata):
     profile['common']['fontfile'] = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
     profile['common']['rate'] = framerate
     profile['common']['fontcolor'] = 'yellow'
-    profile['common']['fontsize'] = roundToMultOf(vid_h/10 , 8)
+    profile['common']['fontsize'] = roundToMultOf(vid_h/12 , 8)
     profile['common']['box'] = 1
     profile['common']['boxcolor'] = 'black@0.5'
     profile['common']['boxborderw'] = 3
@@ -163,7 +163,7 @@ def encoderProf(profile_id, vid_metadata):
     if (profile_id == 'quick'):
         profile['scale'] = {'width': '-4', 'height': '480'}
         # profile['fps'] = {'fps': 25}
-        profile['output']['crf']  = 32
+        profile['output']['crf']  = 30
         profile['output']['preset']  = 'veryfast'
 
     if (profile_id == 'x265_high'):
@@ -277,6 +277,7 @@ def makeSlate(args):
     slate = (
         ffmpeg
         .input(args.input_file)
+        .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
         .trim(**slate_trim_args)    # spits out a single-frame stream
         .filter('loop', loop=args.frames['slate'], size=1, start=1)  # the first frame of the TRIMMED stream
         .setpts('N/FRAME_RATE/TB')      # fixup PTS for the looped frames
@@ -319,7 +320,7 @@ def makeJump(args):
     fade_duration = 2
     jump_fade_args = {
         'type' : 'out',
-        'start_time' : args.secs['slate'] + args.secs['jump'] + args.secs['freeze'] - fade_duration,
+        'start_time' : args.secs['leadin'] + args.secs['jump'] + args.secs['freeze'] - fade_duration,
         'duration' : fade_duration,
     }
 
@@ -337,6 +338,7 @@ def makeJump(args):
         .input(args.input_file)
         .trim(**trim_args)
         .setpts('N/FRAME_RATE/TB')      # fixup PTS for the trimmed stream
+        .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
         .filter('drawtext', **timestamp_args)
         .filter('drawtext', **annot_args)
         .filter('loop', **freeze_loop_args)  

@@ -5,14 +5,15 @@
 **jumpstamper** - a program to overlay ("stamp") various things on top of skydiving videos
 
 ### DESCRIPTION ### 
-"Jumpstamper" is heavily based on ffmpeg and ffmpeg-python, and was originally designed
-to add things like timestamps and frame numbers and text output over competitive
-skydiving video streams.  It could possibly be reconfigured for a number of other things
-but most of the functionality (and certainly much of the context) comes from the skydiving
-universe.
+"Jumpstamper" was designed to add things like timestamps and frame numbers and text output over competitive
+skydiving video streams.  It could possibly be reconfigured for a number of other things but most of the functionality (and certainly much of the context) comes from the competition skydiving universe.
 
 ### DEPENDENCIES ###
-Jumpstamper relies heavily on [ffmpeg](https://github.com/kkroening/ffmpeg-python/) and its associated [filters](https://ffmpeg.org/ffmpeg-filters.html), and is built around the [ffmpeg-python](https://github.com/kkroening/ffmpeg-python/blob/master/README.md) library.  
+Python >= 3.7.  Jumpstamper relies heavily on [ffmpeg](https://github.com/kkroening/ffmpeg-python/) and its associated [filters](https://ffmpeg.org/ffmpeg-filters.html), and is built around the [ffmpeg-python](https://github.com/kkroening/ffmpeg-python/blob/master/README.md) library.  We use [openpyxl](https://openpyxl.readthedocs.io/en/stable/) to parse excel files.  Both are available on [pypi](http://pypi.org), you should use pip/pip3 to install them.
+
+```
+pip3 install openpyxl ffmpeg-python
+```
 
 ### THEORY ###
 the script tries to at least *loosely* follow the ffmpeg config model, where you have an input file, a set of operations/transformations on that file, and an output file.  A set of command line options and/or profiles are used to control the behavior.  
@@ -110,3 +111,6 @@ If you wish to modify a profile or layout, I strongly suggest making a copy of a
  - encoding time/speed is HUGELY variable, based on what encoder options you use,  what kind of machine you're running, the resolution, frame rate, and length of your source video.  The rabbit hole of optimizations here is deep and I hope to get to it one day...
  - You can use Ctrl-C to stop a running encode.
 
+
+### About the author ###
+LJ Wobker is an avid competitive skydiver, a network engineer by trade, and knows only just enough python to code something up like this.  Please be aware that I've mostly written this for myself and my friends to use, and it's not something you should consider professional by any stretch, nor fully supported.  If you have an idea for improvement, please let me know via email at [ljwobker@pobox.com](mailto:ljwobker@pobox.com) and I'll see what we can do.  If you find something that doesn't work, please let me know.  Be aware that the FFMPEG program is pretty damn powerful, but it's also quite complex and the filtering syntax is not always obvious.  I'll be a lot lot lot more prone to help out if you've read over the relevant filter docs and the ffmpeg-python docs/examples so you have some idea of what's going on.
