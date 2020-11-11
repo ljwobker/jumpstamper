@@ -34,7 +34,7 @@ def jumpParser():
 
 
 
-def getVideoMetadata(infile):
+def getVideoMetadata(infile: str) -> dict:
     ''' returns a dict of metadata via ffprobe for the first VIDEO stream in input file. '''
 
     try:
@@ -51,7 +51,7 @@ def getVideoMetadata(infile):
     return video_stream
 
 
-def getFrameRate(vid_metadata):
+def getFrameRate(vid_metadata: dict) -> float:
     ''' returns a float with the probed frame rate from the video file. '''
     rate = vid_metadata['r_frame_rate'].split('/')
     # is it represented as a single integer value?
@@ -66,7 +66,7 @@ def getFrameRate(vid_metadata):
 
 
 
-def overlayProf(profile_id, vid_metadata):
+def overlayProf(profile_id: str, vid_metadata: dict) -> dict:
     '''
     returns a set of parameters for the drawtext filter based on the profile ID provided.
     A set of common parameters are copied to each specific text box, and then we need
@@ -81,27 +81,19 @@ def overlayProf(profile_id, vid_metadata):
     vid_w = vid_metadata['width']
 
     # our parameter profiles are a dictionary of dicts
-    profile = { 
-        'common': {},
-        'framectr': {}, 
-        'timestamp': {}, 
-        'annot': {}, 
-        }
 
-    profile['common'] = {}    # https://ffmpeg.org/ffmpeg-filters.html#drawtext-1 
-    profile['common']['fontfile'] = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
-    profile['common']['rate'] = framerate
-    profile['common']['fontcolor'] = 'yellow'
-    profile['common']['fontsize'] = roundToMultOf(vid_h/12 , 8)
-    profile['common']['box'] = 1
-    profile['common']['boxcolor'] = 'black@0.5'
-    profile['common']['boxborderw'] = 3
-    profile['common']['y'] = 0       # x and y are offsets from the top left of frame
-    profile['common']['x'] = 0
+    common = {}    # https://ffmpeg.org/ffmpeg-filters.html#drawtext-1 
+    common['fontfile'] = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+    common['rate'] = framerate
+    common['fontcolor'] = 'yellow'
+    common['fontsize'] = roundToMultOf(vid_h/12 , 8)
+    common['box'] = 1
+    common['boxcolor'] = 'black@0.5'
+    common['boxborderw'] = 3
 
     # adjust parameters for the frame counter 
-    profile['framectr'] = {
-        **profile['common'], 
+    framectr = {
+        **common, 
         'y' : (vid_h * 0.9), 
         'x' : (vid_w * 0.2),
         'text' : 'in: %{frame_num} @ %{pts}',
@@ -109,23 +101,30 @@ def overlayProf(profile_id, vid_metadata):
         }
 
     # set the location of the timestamp
-    profile['timestamp'] = {
-        **profile['common'],
+    timestamp = {
+        **common, 
         'y' : 0,
         'x' : 0,
         }
 
-    profile['annot'] = copy.deepcopy(profile['common'])
-    profile['annot']['fontsize'] = roundToMultOf(vid_h/16 , 8)
-    annot_y = vid_h - profile['annot']['fontsize'] 
-    profile['annot']['y'] = annot_y
-    profile['annot']['x'] = 0
+    annot_fontsize = roundToMultOf(vid_h/16 , 8)
+    annot = {
+        **common,
+        'fontsize': annot_fontsize,       # 1/16th of height rounded
+        'y': vid_h - annot_fontsize,      # offset by the height from the bottom
+        'x': 0,
+        }   
 
+    profile = { 
+        'framectr': framectr, 
+        'timestamp': timestamp, 
+        'annot': annot, 
+        }
     return profile
 
 
 
-def encoderProf(profile_id, vid_metadata):
+def encoderProf(profile_id: str, vid_metadata: dict) -> dict:
     ''' return the encoder profile.  Each profile has parameters for
     - the output encode options: codec, codec options, quality, etc.
     - the FFMPEG general options such as "no audio" and "hide_banner"
@@ -138,8 +137,7 @@ def encoderProf(profile_id, vid_metadata):
     vid_h = vid_metadata['height']
     vid_w = vid_metadata['width']
 
-    profile = {}
-    profile['output'] = {
+    output = {
         'c:v': 'libx264',
         # 'pix_fmt' : 'yuvj420p',
         'crf': 27,
@@ -147,33 +145,49 @@ def encoderProf(profile_id, vid_metadata):
         'an': None,
         'y': None,
         'hide_banner': None,
-        'format': 'mp4'
+        'format': 'mp4',
+        'benchmark': None,
     }
 
-    profile['scale'] = {'width': vid_w, 'height': vid_h}
-    profile['fps'] = {'fps': framerate}
+    scale = {'width': vid_w, 'height': vid_h}
+    fps = {'fps': framerate}
 
 
     # outputs in 1080 @ 30fps
     if (profile_id == '1080_30'):
-        profile['scale'] = {'width': '-4', 'height': '1080'}
-        profile['fps'] = {'fps': 30}
+        scale = {'width': '-4', 'height': '1080'}
+        fps = {'fps': 30}
 
     # quick - useful for iterative testing!
     if (profile_id == 'quick'):
-        profile['scale'] = {'width': '-4', 'height': '480'}
-        # profile['fps'] = {'fps': 25}
-        profile['output']['crf']  = 30
-        profile['output']['preset']  = 'veryfast'
+        scale = {'width': '-4', 'height': '480'}
+        # fps = {'fps': 25}
+        output['crf']  = 30
+        output['preset']  = 'veryfast'
 
     if (profile_id == 'x265_high'):
-        profile['output']['c:v'] = 'libx265'
-        profile['output']['preset'] = 'medium'
-        profile['output']['crf'] = '28'
+        output['c:v'] = 'libx265'
+        output['preset'] = 'medium'
+        output['crf'] = '28'
+
+    # the null profile does NOT inherit anything so we have to replicate here...
+    # for debug/test only  ;-)
+    if (profile_id == 'null'):
+        output = {
+            'format': 'null',
+            'y': None,
+            'hide_banner': None,
+            'benchmark': None,
+        }
 
 
+    return_id = {
+        'output' : output,
+        'scale' : scale,
+        'fps': fps,
+    }
 
-    return profile
+    return return_id
 
 
 
@@ -200,10 +214,10 @@ class StamperArgs:
     annotation : str = ''
     excel_sheet : str = None
 
-    def numFrames(self, seconds): 
+    def numFrames(self, seconds: float) -> int: 
         return round(seconds * self.framerate)
 
-    def numSecs(self, frames): 
+    def numSecs(self, frames: int) -> float: 
         return (frames / self.framerate)
 
 
@@ -252,7 +266,7 @@ class StamperArgs:
 
 
 
-def makeStamped(args):
+def makeStamped(args: StamperArgs):
     
     overlay_profile = overlayProf(args.overlay_prof, args.vid_metadata)
     framecounter_args = overlay_profile['framectr']
@@ -267,7 +281,7 @@ def makeStamped(args):
 
 
 
-def makeSlate(args):
+def makeSlate(args: StamperArgs):
     
     slate_trim_args = {
         'start_frame' : args.framenum['slate'],
@@ -297,7 +311,7 @@ def makeSlate(args):
 
 
 
-def makeJump(args):
+def makeJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
 
     overlay_profile = overlayProf(args.overlay_prof, args.vid_metadata)
     timestamp_args = overlay_profile['timestamp']
@@ -348,7 +362,7 @@ def makeJump(args):
     return jump
 
 
-def joinAndPostFilters(args, to_concat):
+def joinAndPostFilters(args: StamperArgs, to_concat: list) -> ffmpeg.nodes.FilterableStream:
     enc_opts = encoderProf(args.encoder_prof, args.vid_metadata)
     scale_args = enc_opts['scale']
     fps_filter_args = enc_opts['fps']
@@ -364,7 +378,7 @@ def joinAndPostFilters(args, to_concat):
 
 
 
-def processJumps(list_of_args):
+def processJumps(list_of_args: list):
 
     for args in list_of_args:
         enc_opts = encoderProf(args.encoder_prof, args.vid_metadata)
@@ -383,41 +397,44 @@ def processJumps(list_of_args):
             jump = makeJump(args)
             to_output = joinAndPostFilters(args, [slate, jump])
 
+        if args.encoder_prof == 'null':
+            args.output_file = '/dev/null'
         output = ffmpeg.output(to_output[0], args.output_file, **output_args)
+
         output.run()
         print (f"FFMPEG command string was: \n {' '.join(output.compile())}")
 
 
-
-def jumpsFromXlsx(xls_file):
-    ''' returns a list of dicts, where each dict is a set of arguments for a single jump '''
+def jumpsFromXlsx(xls_file: str) -> list:
+    ''' returns a list of dicts, where each dict is a set of CLI-equivalent arguments for a jump '''
     try:
         wb = openpyxl.load_workbook(xls_file)
-    except:
+    except Exception:
         print(f"failed to open file {xls_file}")
     ws = wb.active
     # TODO: assert that worksheet has at least two rows
     # TODO:assert that input_file and output_file are both in row 1
 
 
-    listOfJumpArgs = []
+    jumpArgs = []
     for jumprow in ws.iter_rows(min_row=2):
         jump_args = {}
         for cell in jumprow:
             # param_key is the value from row 1 for that column
             param_key = ws.cell(row=1, column=cell.column).value
             param_value = cell.value
+            # TODO: need to ignore header values that aren't known ArgParse arguments
             jump_args[param_key] = param_value
         if all (jump_args[k] is not None for k in ['input_file', 'output_file']):   # have to have in/out files, skip "empty" rows...
-            listOfJumpArgs.append(jump_args)
+            jumpArgs.append(jump_args)
 
-    return listOfJumpArgs
+    return jumpArgs
 
 
-def getCmdLineList(parser):
+def getCmdLineList(parser: argparse.ArgumentParser) -> list:
     '''
     if it's an excel sheet, return each set of arguments as an element in the list
-    if it's a single jump, return a list with one element containing the passed args
+    if it's a single jump from a set of CLI args, return a single element list containing the passed args
     '''
     cleaned_jumps = []
     cli_args = vars(parser.parse_args())  
