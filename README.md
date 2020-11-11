@@ -19,7 +19,7 @@ pip3 install openpyxl ffmpeg-python
 the script tries to at least *loosely* follow the ffmpeg config model, where you have an input file, a set of operations/transformations on that file, and an output file.  A set of command line options and/or profiles are used to control the behavior.  
 
 
-### EXAMPLES ###
+### EXAMPLES / TIPS ###
 
 ---
 
@@ -68,6 +68,16 @@ If you aren't interested in the exact exit time, but maybe want to just trim you
 ```
 ./jumpstamper.py -i input.mp4 -o output.mp4 -wt 0 -ef 720 -jt 60
 ```
+
+---
+
+If you want to just transcode through an entire jump with the timer counting up the whole time, set the "working_time" and "jump_time" values to something arbitrarily high.  
+```
+jumpstamper.py -i GOPR2935.MP4 -o thru.mp4 -enc quick -wt 90 -ef 0 -jt 90
+```
+
+---
+
 
 
 ### OPTIONS ###

@@ -6,6 +6,18 @@
     "configurations": [
 
 
+        {
+            "name": "test",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "args": ["-i", "GOPR2951.MP4", "-o", "thru.mp4", 
+                "-ef", "240", "-wt", "90", "-jt", "90", "-lt", "3"
+                "-enc", "quick", 
+                ],
+            "cwd": "/fastest/ljw/Aviatrixx"
+        }  
 
         {
             "name": "Aviatrixx",
@@ -13,7 +25,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "args": ["-i", "GOPR2951.MP4", "-o", "test_out.mp4", "-ef", "702", 
+            "args": ["-i", "GOPR2951.MP4", "-o", "thru.mp4", "-ef", "2", 
                      "-sf", "284", "-st", "3", 
                     "-ft", "3", "-lt", "4", 
                     "-wt", "10", "-jt", "15", "-an", "d01_j03:B-C-E-L-P",

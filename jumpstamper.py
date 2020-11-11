@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import os
 import sys
-import subprocess
 import ffmpeg
 import openpyxl
 import argparse
@@ -61,9 +59,6 @@ def getFrameRate(vid_metadata: dict) -> float:
     if len(rate)==2:
         return float(rate[0])/float(rate[1])
     return -1
-
-
-
 
 
 def overlayProf(profile_id: str, vid_metadata: dict) -> dict:
@@ -345,7 +340,7 @@ def makeJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
         # this is an expression that drawtext can evaluate to get the timestamp in the format 
         # that we want.  See 'eif' 'trunc' 'abs' functions and 't' variable in docs.
         base_EIF_calc = '%{eif:(trunc(t-LEADIN)):d:2}.%{eif:abs((1M*(t-LEADIN)-1M*trunc(t-LEADIN))/10000):d:2}'
-        timestamp_args['text'] = base_EIF_calc.replace('LEADIN', str(args.leadin_time))
+        timestamp_args['text'] = base_EIF_calc.replace('LEADIN', str(args.secs['leadin']))
 
     jump = (
         ffmpeg
