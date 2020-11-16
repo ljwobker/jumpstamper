@@ -390,8 +390,9 @@ def processJumps(list_of_args: list):
         print (f"FFMPEG command string was: \n {' '.join(output.compile())}")
 
 
-def jumpsFromXlsx(xls_file: str) -> list:
+def jumpsFromXlsx(args: dict, known_args: list) -> list:
     ''' returns a list of dicts, where each dict is a set of CLI-equivalent arguments for a jump '''
+    xls_file = args['excel_sheet']
     try:
         wb = openpyxl.load_workbook(xls_file)
     except Exception:
@@ -408,8 +409,11 @@ def jumpsFromXlsx(xls_file: str) -> list:
             # param_key is the value from row 1 for that column
             param_key = ws.cell(row=1, column=cell.column).value
             param_value = cell.value
-            # TODO: need to ignore header values that aren't known ArgParse arguments
-            jump_args[param_key] = param_value
+            # ignore/warn on any header values that aren't known ArgParse arguments
+            if param_key in known_args:
+                jump_args[param_key] = param_value
+            else:
+                print(f"ignoring an unknown header row value ({param_key}) in excel file: {xls_file}")
         if all (jump_args[k] is not None for k in ['input_file', 'output_file']):   # have to have in/out files, skip "empty" rows...
             jumpArgs.append(jump_args)
 
@@ -421,10 +425,11 @@ def getCmdLineList(parser: argparse.ArgumentParser) -> list:
     if it's an excel sheet, return each set of arguments as an element in the list
     if it's a single jump from a set of CLI args, return a single element list containing the passed args
     '''
+    known_parser_args = [action.dest for action in parser._actions]
     cleaned_jumps = []
     cli_args = vars(parser.parse_args())  
     if cli_args['excel_sheet'] is not None:
-        jumpsToProcess = jumpsFromXlsx(cli_args['excel_sheet'])
+        jumpsToProcess = jumpsFromXlsx(cli_args, known_parser_args)
     else:
         jumpsToProcess = [cli_args]         # make the jump into a single item list
     
