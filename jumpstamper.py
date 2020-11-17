@@ -107,13 +107,12 @@ class StamperProfiles:
         vid_h = vid_metadata['height']
         vid_w = vid_metadata['width']
 
-
+        ''' the shared arguments for the drawtext filters.  Change if you need.  Font selection
+        is particularly messy with FFMPEG, you can either provide an explicit font file (careful with
+        OS-specific stuff here, or if your FFMPEG has fontconfig compiled in, just give it a 
+        family and have the ffmpeg app determine what you use.  "font" is likely more portable
+        if the support is compiled in...'''
         self.common_dt : dict = {                 
-            ''' the shared arguments for the drawtext filters.  Change if you need.  Font selection
-            is particularly messy with FFMPEG, you can either provide an explicit font file (careful with
-            OS-specific stuff here, or if your FFMPEG has fontconfig compiled in, just give it a 
-            family and have the ffmpeg app determine what you use.  "font" is likely more portable
-            if the support is compiled in...'''
             # 'fontfile' : '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
             'font' : 'Sans',
             'rate' : framerate,
