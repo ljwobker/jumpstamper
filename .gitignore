@@ -1,3 +1,5 @@
 .vscode/.ropeproject/config.py
 .vscode/.ropeproject/objectdb
 foo.py
+.vscode/settings.json
+.vscode/launch.json

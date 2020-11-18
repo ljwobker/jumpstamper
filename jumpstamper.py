@@ -114,7 +114,7 @@ class StamperProfiles:
         if the support is compiled in...'''
         self.common_dt : dict = {                 
             # 'fontfile' : '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf',
-            'font' : 'Sans',
+            'font' : 'Arial',
             'rate' : framerate,
             'fontcolor' : 'yellow',
             'fontsize' : round(vid_metadata['height'] / 12 / 8) * 8,    # round to a multiple of 8
@@ -180,19 +180,20 @@ class StamperProfiles:
             'height' : vid_h,
         }
 
-        self.output : dict = {                  # output arguments
-            'c:v': 'libx264',
-            # 'pix_fmt' : 'yuvj420p',
-            'crf': 27,
-            'preset': 'slow',
+        self.input : dict = {
+            'hide_banner': None,
+            'benchmark': None,
             'an': None,
             'y': None,
-            'hide_banner': None,
-            'format': 'mp4',
-            'benchmark': None,
         }
 
-           # outputs in 1080 @ 30fps
+        self.output : dict = {                  # default output arguments
+            'c:v': 'libx264',
+            'b:v' : '10M',
+            'format': 'mp4',
+        }
+
+        # outputs in 1080 @ 30fps
         if (self.args.encoder_prof == '1080_30'):
             self.scale = {'width': '-4', 'height': '1080'}
             self.fps = {'fps': 30}
@@ -204,10 +205,36 @@ class StamperProfiles:
             self.output['crf']  = 30
             self.output['preset']  = 'veryfast'
 
+        # good-quality output in h.265 but takes a while...
         if (self.args.encoder_prof == 'x265_high'):
             self.output['c:v'] = 'libx265'
-            self.output['preset'] = 'medium'
-            self.output['crf'] = '28'
+            self.output['preset'] = 'slow'
+            self.output['b:v'] = '10M'
+
+        # HW accelerated h.264 (must have hardware/GPU support!)
+        if (self.args.encoder_prof == 'qsv_h264'):
+            self.output = {
+            'c:v' : 'h264_qsv',
+            'look_ahead' : '1',
+            'look_ahead_depth' : '40',
+            'b:v' : '5M',
+            }
+            self.input['hwaccel'] = 'qsv'
+            self.input['loglevel'] = 'verbose'
+
+        # HW accelerated HEVC/h.265 (must have hardware/GPU support!)
+        if (self.args.encoder_prof == 'qsv_hevc'):
+            self.output = {
+                'c:v' : 'hevc_qsv',
+                'preset' : '4',
+                'b:v' : '10M',
+            }
+            self.input['hwaccel'] = 'qsv'
+            self.input['loglevel'] = 'verbose'
+
+
+
+
 
         # the null profile does NOT inherit anything so we have to replicate here...
         # for debug/test only  ;-)
@@ -215,8 +242,6 @@ class StamperProfiles:
             self.output = {
                 'format': 'null',
                 'y': None,
-                'hide_banner': None,
-                'benchmark': None,
             }
 
 
@@ -277,12 +302,10 @@ def getFrameRate(vid_metadata: dict) -> float:
 
 def makeStamped(args: StamperArgs):
     
-    overlay_profile = overlayProf(args.overlay_prof, args.vid_metadata)
-    framecounter_args = overlay_profile['framectr']
-
+    settings = StamperProfiles(args)
     output = (
         ffmpeg
-        .input(args.input_file)
+        .input(args.input_file, **settings.input)
         .filter('drawtext', **framecounter_args)
     )
 
@@ -292,6 +315,7 @@ def makeStamped(args: StamperArgs):
 
 def makeSlate(args: StamperArgs):
     
+    settings = StamperProfiles(args)
     slate_trim_args = {
         'start_frame' : args.framenum['slate'],
         'end_frame' : args.framenum['slate'] + 1,
@@ -299,7 +323,7 @@ def makeSlate(args: StamperArgs):
 
     slate = (
         ffmpeg
-        .input(args.input_file)
+        .input(args.input_file, **settings.input)
         .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
         .trim(**slate_trim_args)    # spits out a single-frame stream
         .filter('loop', loop=args.frames['slate'], size=1, start=1)  # the first frame of the TRIMMED stream
@@ -320,7 +344,8 @@ def makeSlate(args: StamperArgs):
 
 
 
-def makeMainJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
+# def makeMainJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
+def makeMainJump(args: StamperArgs):
 
     settings = StamperProfiles(args)
 
@@ -334,7 +359,7 @@ def makeMainJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
 
     main_jump = (
         ffmpeg
-        .input(args.input_file)
+        .input(args.input_file, **settings.input)
         .trim(**settings.jump_trim)
         .setpts('N/FRAME_RATE/TB')      # fixup PTS for the trimmed stream
         .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
@@ -347,7 +372,8 @@ def makeMainJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
     return main_jump
 
 
-def joinAndPostFilters(args: StamperArgs, to_concat: list) -> ffmpeg.nodes.FilterableStream:
+# def joinAndPostFilters(args: StamperArgs, to_concat: list) -> ffmpeg.nodes.FilterableStream:
+def joinAndPostFilters(args: StamperArgs, to_concat: list):
 
     settings = StamperProfiles(args)
     joined = (
@@ -385,8 +411,8 @@ def processJumps(list_of_args: list):
             cli_args.output_file = '/dev/null'
 
         output = ffmpeg.output(to_output[0], cli_args.output_file, **filter_args.output)
+        print (f"FFMPEG command string is: \n {' '.join(output.compile())}")
         output.run()
-        print (f"FFMPEG command string was: \n {' '.join(output.compile())}")
 
 
 def jumpsFromXlsx(args: dict, known_args: list) -> list:
