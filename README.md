@@ -106,7 +106,7 @@ There are quite a few, but the idea is we wanted to be able to put all the possi
 
 `-ovr, --overlay_prof` : (*optional*) a profile that describes what various overlay elements (such as the counter/clock, the jump name, the team name, etc.) are present, their parameters (color, size, etc.) and where they are overlaid on the video.  These are a combination of script parameters as well as options that are fed to the various ffmpeg filters.
 
-`-enc, --encoder_prof` : (*optional*)  (*advanced users*) an encoder profile is a set of options used to encode/transcode the video file.  This includes things like the output resolution, the output quality, and the output codec.  
+`-enc, --encoder_prof` : (*optional*)  (*advanced users*) an encoder profile is a set of options used to encode/transcode the video file.  This includes things like the output resolution, the output quality, and the output codec.  A `quick` profile is included specifically for things like testing and stamping.
 
 `-an, --annotation` : (*optional*, default=None) the string to use for the annotation block of the overlay.  This could be something like the jump sequence, the team name, the videographer credits, etc.
 

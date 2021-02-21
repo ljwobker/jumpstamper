@@ -198,7 +198,7 @@ class StamperProfiles:
             self.scale = {'width': '-4', 'height': '1080'}
             self.fps = {'fps': 30}
 
-        # quick - useful for iterative testing!
+        # quick - useful for iterative testing or for stamping frame numbers...
         if (self.args.encoder_prof == 'quick'):
             self.scale = {'width': '-4', 'height': '480'}
             # fps = {'fps': 25}
@@ -306,7 +306,7 @@ def makeStamped(args: StamperArgs):
     output = (
         ffmpeg
         .input(args.input_file, **settings.input)
-        .filter('drawtext', **framecounter_args)
+        .filter('drawtext', **settings.framectr_dt)
     )
 
     return output
