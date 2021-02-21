@@ -209,7 +209,7 @@ class StamperProfiles:
         if (self.args.encoder_prof == 'x265_high'):
             self.output['c:v'] = 'libx265'
             self.output['preset'] = 'slow'
-            self.output['b:v'] = '10M'
+            self.output['b:v'] = '8M'
 
         # HW accelerated h.264 (must have hardware/GPU support!)
         if (self.args.encoder_prof == 'qsv_h264'):
@@ -217,7 +217,7 @@ class StamperProfiles:
             'c:v' : 'h264_qsv',
             'look_ahead' : '1',
             'look_ahead_depth' : '40',
-            'b:v' : '5M',
+            'b:v' : '8M',
             }
             self.input['hwaccel'] = 'qsv'
             self.input['loglevel'] = 'verbose'
@@ -227,7 +227,7 @@ class StamperProfiles:
             self.output = {
                 'c:v' : 'hevc_qsv',
                 'preset' : '4',
-                'b:v' : '10M',
+                'b:v' : '8M',
             }
             self.input['hwaccel'] = 'qsv'
             self.input['loglevel'] = 'verbose'
