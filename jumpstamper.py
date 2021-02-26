@@ -24,10 +24,11 @@ class StamperArgs:
     input_file : str = ''
     output_file : str = ''
     stamp : bool = False
-    slate_time : float = 0.0
+    slate_time : float = 3.0
     freeze_time : float = 0.0
     leadin_time : float = 0.0
     working_time : float = 0.0
+    fade_time : float = 0.0
     jump_time : float = 60.0    
     slate_frame : int = 0
     exit_frame : int = 0
@@ -69,6 +70,9 @@ class StamperArgs:
             'freeze' : self.exit_frame + self.numFrames(self.working_time),
             'end' : self.exit_frame + self.numFrames(self.jump_time),
         }
+
+
+
         # compute the duration in FRAMES from the values we have in SECONDS
         self.frames = { k:self.numFrames(v) for k,v in self.secs.items() }
         self.sanity()
@@ -82,7 +86,8 @@ class StamperArgs:
             self.framenum['leadin'] = 0
             # the leadin duration is now the exit frame number comverted back to seconds
             self.secs['leadin'] = self.numSecs(self.framenum['exit'])
-
+        if self.slate_frame == 0:
+            self.slate_time = 0
 
 
 @dataclass
@@ -139,7 +144,7 @@ class StamperProfiles:
         
         self.jump_trim = {                # trim filter for the main jump
             'start_frame': self.args.framenum['leadin'],   
-            'end_frame': self.args.framenum['end'],
+            'end_frame': self.args.framenum['end'] + 1,
         }
 
         self.timer_dt = {                 # drawtext filter for timer
@@ -164,7 +169,7 @@ class StamperProfiles:
             'size': 1,
         }
         
-        fade_duration = 2
+        fade_duration = self.args.fade_time
         self.jump_fade : dict = {               # fade filter for main jump
             'type' : 'out',
             'start_time' : self.args.secs['leadin'] + self.args.secs['jump'] + self.args.secs['freeze'] - fade_duration,
@@ -180,7 +185,7 @@ class StamperProfiles:
             'height' : vid_h,
         }
 
-        self.input : dict = {
+        self.input : dict = {               # default general input arguments
             'hide_banner': None,
             'benchmark': None,
             'an': None,
@@ -260,6 +265,7 @@ def jumpParser():
     parser.add_argument("-ef",  "--exit_frame", action="store", type=int, help="frame number of the exit")
     parser.add_argument("-sf",  "--slate_frame", action="store", type=int,   help="frame number of the slate, 0 to disable")
     parser.add_argument("-ft",  "--freeze_time", action="store", type=float,   help="duration of the freeze, 0 to disable")
+    parser.add_argument("-dt",  "--fade_time", action="store", type=float,   help="duration of the fade in/out filter")
     parser.add_argument("-ovr", "--overlay_prof", action="store", type=str,   help="the overlay profile name")
     parser.add_argument("-enc", "--encoder_prof", action="store", type=str,   help="the encoder options profile name")
     parser.add_argument("-an",  "--annotation", action="store", type=str,   help="annotation string")

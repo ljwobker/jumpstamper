@@ -102,7 +102,9 @@ There are quite a few, but the idea is we wanted to be able to put all the possi
 
 `-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.).  If `working_time` is set to zero, no timer is displayed for that jump.  This can be useful if you just want to trim down a video without caring exactly when the exit is.
 
-`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.
+`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.  This is currently a **combination** of the working time and the freeze-frame time.  So if you have 35 seconds of working time,  5 seconds of freeze time, and you want the video clip to end immediately after the freeze-frame, you set this parameter to (35 + 5 = 40).
+
+`-dt, --fade_time`: (*optional*, default is 0) duration of the fade out from the main jump.  (Note that the shortcut is `dt` rather than `ft` because `freeze_time` got there first!)
 
 `-ovr, --overlay_prof` : (*optional*) a profile that describes what various overlay elements (such as the counter/clock, the jump name, the team name, etc.) are present, their parameters (color, size, etc.) and where they are overlaid on the video.  These are a combination of script parameters as well as options that are fed to the various ffmpeg filters.
 
