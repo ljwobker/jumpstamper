@@ -15,6 +15,13 @@ Python >= 3.7.  Jumpstamper relies heavily on [ffmpeg](https://github.com/kkroen
 pip3 install openpyxl ffmpeg-python
 ```
 
+Fonts for FFMpeg aren't exactly straightforward, it's very possible you'll have to adjust the code to find fonts that are installed on your particular system.  The default font is set inside the `self.common_dt` parameter dictionary.  On my Linux system, the line looks like this:
+`            'font' : 'Arial',`
+but I can get a LOT more specific if I want to:
+`            'fontfile' : '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf,'`
+One user reported that on a Mac, this line works:
+`            'fontfile' : '/Library/Fonts/Arial.ttf',`
+
 ### THEORY ###
 the script tries to at least *loosely* follow the ffmpeg config model, where you have an input file, a set of operations/transformations on that file, and an output file.  A set of command line options and/or profiles are used to control the behavior.  
 
@@ -102,7 +109,7 @@ There are quite a few, but the idea is we wanted to be able to put all the possi
 
 `-wt, --working_time` : (*optional*, default=0) duration of working time for the jump.  (e.g. 35s for 4-way FS, 50s for 8-way, etc.).  If `working_time` is set to zero, no timer is displayed for that jump.  This can be useful if you just want to trim down a video without caring exactly when the exit is.
 
-`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.  This is currently a **combination** of the working time and the freeze-frame time.  So if you have 35 seconds of working time,  5 seconds of freeze time, and you want the video clip to end immediately after the freeze-frame, you set this parameter to (35 + 5 = 40).
+`-jt, --jump_time` : (*optional*, default=60) duration of the output jump video.  Useful for trimming unnecessary video from the end of the jump/file.  Note if the jump time "ends" before the freeze frame begins, you won't get the freeze.
 
 `-dt, --fade_time`: (*optional*, default is 0) duration of the fade out from the main jump.  (Note that the shortcut is `dt` rather than `ft` because `freeze_time` got there first!)
 
