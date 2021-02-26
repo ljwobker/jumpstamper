@@ -16,11 +16,17 @@ pip3 install openpyxl ffmpeg-python
 ```
 
 Fonts for FFMpeg aren't exactly straightforward, it's very possible you'll have to adjust the code to find fonts that are installed on your particular system.  The default font is set inside the `self.common_dt` parameter dictionary.  On my Linux system, the line looks like this:
+
 `            'font' : 'Arial',`
+
 but I can get a LOT more specific if I want to:
+
 `            'fontfile' : '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf,'`
+
 One user reported that on a Mac, this line works:
+
 `            'fontfile' : '/Library/Fonts/Arial.ttf',`
+
 
 ### THEORY ###
 the script tries to at least *loosely* follow the ffmpeg config model, where you have an input file, a set of operations/transformations on that file, and an output file.  A set of command line options and/or profiles are used to control the behavior.  
