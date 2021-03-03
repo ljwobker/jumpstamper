@@ -62,6 +62,7 @@ The corresponding command line to execute is:
 
 Now say you have a bunch of files from a hard day of jumping and you want to do the frame overlay on all of them at once.  We'll just use a [tiny bit of BASH](https://tldp.org/LDP/abs/html/abs-guide.html#EX22) here and do them all in one shot:
 ```
+#!/bin/bash
 for file in GOPR*.MP4
 do 
     ./jumpstamper.py -i $file -s -o stamped-$file
@@ -74,6 +75,8 @@ If you want to process a bunch of files at once, you can build an excel file wit
 ```
 ./jumpstamper.py -xls encode.xlsx
 ```
+An example.xlsx file is included, the format is such that each row represents a single jump to process.  The column headers are the 'long form' variable names such as `slate_time` or `exit_frame`
+
 
 ---
 
