@@ -142,8 +142,14 @@ class StamperProfiles:
             'end_frame' : self.args.framenum['slate'] + 1,
         }
         
+        self.leadin_trim = {
+            'start_frame' : self.args.framenum['leadin'],
+            'end_frame' : self.args.framenum['exit'],
+        }
+
+
         self.jump_trim = {                # trim filter for the main jump
-            'start_frame': self.args.framenum['leadin'],   
+            'start_frame': self.args.framenum['exit'],   
             'end_frame': self.args.framenum['end'] + 1,
         }
 
@@ -164,7 +170,7 @@ class StamperProfiles:
 
         self.freeze_loop : dict = {             # loop filter for freezeframe
             # freeze starts here because we have to compensate for the 'trim'
-            'start': self.args.framenum['freeze'] - self.args.framenum['leadin'] + 1,
+            'start': self.args.framenum['freeze'] - self.args.framenum['exit'] + 1,
             'loop': self.args.frames['freeze'],
             'size': 1,
         }
@@ -184,6 +190,14 @@ class StamperProfiles:
             'width' : vid_w,
             'height' : vid_h,
         }
+
+        self.crop : dict = {
+            'width' : '0.8*in_w',
+            'height' : 'ih',
+             'x' : '0.1*in_w',
+             'y' : '0',
+        }
+
 
         self.input : dict = {               # default general input arguments
             'hide_banner': None,
@@ -330,7 +344,8 @@ def makeSlate(args: StamperArgs):
     slate = (
         ffmpeg
         .input(args.input_file, **settings.input)
-        .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
+        # .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
+        .crop(**settings.crop)
         .trim(**slate_trim_args)    # spits out a single-frame stream
         .filter('loop', loop=args.frames['slate'], size=1, start=1)  # the first frame of the TRIMMED stream
         .setpts('N/FRAME_RATE/TB')      # fixup PTS for the looped frames
@@ -350,6 +365,26 @@ def makeSlate(args: StamperArgs):
 
 
 
+def makeLeadIn(args: StamperArgs):
+
+    settings = StamperProfiles(args)
+    base_EIF_calc = '%{eif:(abs(trunc(t-LEADIN))):d:2}.%{eif:abs((1M*(t-LEADIN)-1M*trunc(t-LEADIN))/10000):d:2}'
+    settings.timer_dt['text'] = base_EIF_calc.replace('LEADIN', str(args.secs['leadin']))
+    settings.timer_dt['fontcolor'] = 'red'
+
+    leadInStream = (
+        ffmpeg
+        .input(args.input_file, **settings.input)
+        .trim(**settings.leadin_trim)
+        .setpts('N/FRAME_RATE/TB')      # fixup PTS for the trimmed stream
+        # .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
+        .crop(**settings.crop)
+        .filter('drawtext', **settings.timer_dt)
+        .filter('drawtext', **settings.annot_dt)
+    )
+    return leadInStream
+
+
 # def makeMainJump(args: StamperArgs) -> ffmpeg.nodes.FilterableStream:
 def makeMainJump(args: StamperArgs):
 
@@ -361,6 +396,7 @@ def makeMainJump(args: StamperArgs):
         # this is an expression that drawtext can evaluate to get the timestamp in the format 
         # that we want.  See 'eif' 'trunc' 'abs' functions and 't' variable in docs.
         base_EIF_calc = '%{eif:(trunc(t-LEADIN)):d:2}.%{eif:abs((1M*(t-LEADIN)-1M*trunc(t-LEADIN))/10000):d:2}'
+        base_EIF_calc = '%{eif:(trunc(t)):d:2}.%{eif:abs((1M*(t)-1M*trunc(t))/10000):d:2}'
         settings.timer_dt['text'] = base_EIF_calc.replace('LEADIN', str(args.secs['leadin']))
 
     main_jump = (
@@ -368,7 +404,8 @@ def makeMainJump(args: StamperArgs):
         .input(args.input_file, **settings.input)
         .trim(**settings.jump_trim)
         .setpts('N/FRAME_RATE/TB')      # fixup PTS for the trimmed stream
-        .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
+        # .crop(width='0.8*in_w', height='ih', x='0.1*in_w', y=0)
+        .crop(**settings.crop)
         .filter('drawtext', **settings.timer_dt)
         .filter('drawtext', **settings.annot_dt)
         .filter('loop', **settings.freeze_loop)  
@@ -405,13 +442,15 @@ def processJumps(list_of_args: list):
             to_output = joinAndPostFilters(cli_args, [framestamped])
 
         elif cli_args.slate_time == 0:      # there's no slate info from the CLI
+            lead_in = makeLeadIn(cli_args)
             main_jump = makeMainJump(cli_args)
-            to_output = joinAndPostFilters(cli_args, [main_jump])
+            to_output = joinAndPostFilters(cli_args, [lead_in, main_jump])
 
         else:           # we have a slate to add up front...
             slate = makeSlate(cli_args)
+            lead_in = makeLeadIn(cli_args)
             main_jump = makeMainJump(cli_args)
-            to_output = joinAndPostFilters(cli_args, [slate, main_jump])
+            to_output = joinAndPostFilters(cli_args, [slate, lead_in, main_jump])
 
         if cli_args.encoder_prof == 'null':
             cli_args.output_file = '/dev/null'
