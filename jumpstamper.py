@@ -485,6 +485,10 @@ def jumpsFromXlsx(args: dict, known_args: list) -> list:
             else:
                 print(f"ignoring an unknown header row value ({param_key}) in excel file: {xls_file}")
         if all (jump_args[k] is not None for k in ['input_file', 'output_file']):   # have to have in/out files, skip "empty" rows...
+            for textvar in ['input_file', 'output_file', 'annotation', 'encoder_prof']:
+                jump_args[textvar] = str(jump_args[textvar])
+            for intvar in ['slate_frame', 'exit_frame','working_time', 'jump_time', 'slate_time', 'leadin_time', 'freeze_time']:
+                jump_args[intvar] = int(jump_args[intvar])
             jumpArgs.append(jump_args)
 
     return jumpArgs

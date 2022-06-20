@@ -5,18 +5,16 @@
     "version": "0.2.0",
     "configurations": [
 
-
         {
             "name": "test",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "/dtop/scripts/jumpstamper/jumpstamper.py",
             "console": "integratedTerminal",
-            "args": ["-i", "GOPR2951.MP4", "-o", "thru.mp4", 
-                "-ef", "240", "-wt", "90", "-jt", "90", "-lt", "3",
-                "-enc", "quick", 
+            "args": ["-xls", "8way.xlsx",
+                "-enc", "1080_30", 
                 ],
-            "cwd": "/fastest/ljw/Aviatrixx",
+            "cwd": "/dtop/jumping/2022/8way",
         },
 
 
