@@ -198,6 +198,15 @@ class StamperProfiles:
              'y' : '0',
         }
 
+        self.crop : dict = {
+            'width' : 'in_w',
+            'height' : 'ih',
+             'x' : '0',
+             'y' : '0',
+        }
+
+
+
 
         self.input : dict = {               # default general input arguments
             'hide_banner': None,
@@ -219,7 +228,13 @@ class StamperProfiles:
 
         # quick - useful for iterative testing or for stamping frame numbers...
         if (self.args.encoder_prof == 'quick'):
-            self.scale = {'width': '-4', 'height': '480'}
+            self.crop : dict = {
+                'width' : '0.6*in_w',
+                'height' : '0.6*ih',
+                'x' : '0.2*in_w',
+                'y' : '0.2*ih',
+            }            
+            self.scale = {'width': '-4', 'height': '400'}
             # fps = {'fps': 25}
             self.output['crf']  = 30
             self.output['preset']  = 'veryfast'
